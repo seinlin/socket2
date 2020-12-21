@@ -26,6 +26,9 @@ libc = { version = "0.2.66", features = ["align"] }
 [dev-dependencies]
 tempdir = "0.3"
 
+[dependencies.log]
+version = "0.4"
+
 [features]
 reuseport = []
 pair = []

@@ -8,6 +8,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
+use log::debug;
 use std::cmp;
 #[cfg(target_os = "linux")]
 use std::ffi::{CStr, CString};
@@ -487,7 +488,7 @@ impl Socket {
             let mut storage: libc::sockaddr_storage = mem::zeroed();
             let mut addrlen = mem::size_of_val(&storage) as socklen_t;
 
-            let n = cvt({
+            let n = match cvt({
                 libc::recvfrom(
                     self.fd,
                     buf.as_mut_ptr() as *mut c_void,
@@ -496,7 +497,16 @@ impl Socket {
                     &mut storage as *mut _ as *mut _,
                     &mut addrlen,
                 )
-            })?;
+            }) {
+                Ok(t) => {
+                    debug!("DEBUG ACTIX recv_from Ok.");
+                    t
+                },
+                Err(e) => {
+                    debug!("DEBUG ACTIX recv_from error: {:?}", e);
+                    return Err(e);
+                }
+            };
             let addr = SockAddr::from_raw_parts(&storage as *const _ as *const _, addrlen);
             Ok((n as usize, addr))
         }
